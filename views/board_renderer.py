@@ -1,8 +1,7 @@
 """ASCII rendering for the game board."""
 
-from typing import Optional
 from models.board import Board
-from models.entities import EntityType
+from models.entities import Coordinates, EntityType
 
 
 class BoardRenderer:
@@ -42,7 +41,7 @@ class BoardRenderer:
         for row in range(self.board.rows):
             row_chars = []
             for col in range(self.board.cols):
-                entity = self.board.get_entity_at(row, col)
+                entity = self.board.get_entity_at(Coordinates(row, col))
                 symbol = self.SYMBOLS.get(entity, "?") if entity else "?"
                 row_chars.append(symbol)
 

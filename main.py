@@ -1,6 +1,5 @@
 """Main entry point for Fire At Will Shakespeare."""
 
-import random
 from models.board import Board
 from views.board_renderer import BoardRenderer
 
@@ -11,24 +10,9 @@ def main():
     print("=" * 40)
     print()
 
-    # Create a board
+    # Create a board and initialize with random ships and hostages
     board = Board(rows=8, cols=8)
-
-    # Place 5 ships randomly
-    ships_placed = 0
-    while ships_placed < 5:
-        row = random.randint(0, 7)
-        col = random.randint(0, 7)
-        if board.place_ship(row, col):
-            ships_placed += 1
-
-    # Place 3 hostages randomly
-    hostages_placed = 0
-    while hostages_placed < 3:
-        row = random.randint(0, 7)
-        col = random.randint(0, 7)
-        if board.place_hostage(row, col):
-            hostages_placed += 1
+    board.setup(num_ships=5, num_hostages=3)
 
     # Render the board
     renderer = BoardRenderer(board)
