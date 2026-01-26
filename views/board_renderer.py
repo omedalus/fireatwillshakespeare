@@ -68,3 +68,41 @@ class BoardRenderer:
         ]
 
         return board_str + "\n" + "\n".join(legend)
+
+    def describe(self) -> str:
+        """
+        Describe the board in text form for the LLM.
+
+        Returns:
+            A textual description of the board
+        """
+        ship_positions = []
+        hostage_positions = []
+        for row in range(self.board.rows):
+            for col in range(self.board.cols):
+                position_str = f"{chr(ord('A') + col)}{row + 1}"
+                entity = self.board.get_entity_at(Coordinates(row, col))
+                if entity == EntityType.SHIP:
+                    ship_positions.append(position_str)
+                elif entity == EntityType.HOSTAGE:
+                    hostage_positions.append(position_str)
+
+        s = f"""
+The board is a grid measuring {self.board.rows}x{self.board.cols}.
+Columns are marked by letters A through {chr(ord("A") + self.board.cols - 1)}.
+Rows are marked by numbers 1 through {self.board.rows}.
+A1 is the top-left corner of the board.
+There are two kinds of entities on the board: SHIPS and HOSTAGES.
+The Allies are trying to hit SHIPS while avoiding HOSTAGES.
+SHIPS: There are {
+    len(ship_positions)
+} ships on the board, at positions: {
+    ", ".join(ship_positions) if len(ship_positions) > 0 else "NONE"
+}.
+HOSTAGES: There are {
+    len(hostage_positions)
+} hostages on the board, at positions: {
+    ", ".join(hostage_positions) if len(hostage_positions) > 0 else "NONE"
+}.
+"""
+        return s.strip()

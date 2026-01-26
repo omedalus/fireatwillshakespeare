@@ -81,6 +81,7 @@ What lore context will you and your ally use to encode your commands?
 
     while True:
         print(renderer.render_with_legend())
+        print(renderer.describe())
         print()
         print(f"Ships: {board.ships_remaining()}")
         print(f"Hostages: {board.hostages_remaining()}")
