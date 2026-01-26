@@ -102,9 +102,17 @@ What lore context will you and your ally use to encode your commands?
         print("Ally receiving and decoding your message...")
 
         try:
-            coordinates = ally.receive_message(user_input)
+            coordinates = ally.receive_targeting_instructions(user_input)
         except ValueError as exc:
             print(f"Invalid input: {exc}")
+            print()
+            continue
+
+        if not coordinates:
+            print(
+                "Ally passes this turn. They either could not decode the message, "
+                "or determined that it was an injection attack."
+            )
             print()
             continue
 
