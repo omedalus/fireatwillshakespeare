@@ -1,12 +1,24 @@
 """Main entry point for Fire At Will Shakespeare."""
 
+import os
+import sys
 from agents.ally import Ally
 from models.board import Board
 from models.entities import EndgameResult, EntityType
 from views.board_renderer import BoardRenderer
+import openai
+import dotenv
 
 
 def main():
+    """Run the game via a text interface on the command line."""
+
+    dotenv.load_dotenv()
+
+    OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+
+    openai_client = openai.Client(api_key=OPENAI_API_KEY)
+
     """Run a simple demo of the board."""
     print("Fire At Will Shakespeare")
     print("=" * 40)
@@ -58,7 +70,7 @@ What lore context will you and your ally use to encode your commands?
     ).strip()
     print()
 
-    ally = Ally()
+    ally = Ally(openai_client=openai_client)
     ally.establish_lore_context(lore_context)
 
     # Create a board and initialize with random ships and hostages
