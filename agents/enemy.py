@@ -1,28 +1,24 @@
-"""Ally logic for receiving player commands."""
+"""Enemy logic for eavesdropping on player commands."""
 
 from typing import Optional
 
 import openai
 
-from models.entities import Coordinates, EntityType
+from models.entities import Coordinates
 
 from utils.gpt import GptConversation, JSONSchemaFormat
 
+# TODO: THIS IS STILL MOSTLY JUST A COPY OF THE ALLY CLASS. NEED TO CUSTOMIZE IT FOR THE ENEMY.
 
-class Ally:
-    """The friendly artillery team that decodes player messages."""
+
+class Enemy:
+    """The enemy artillery team that eavesdrops on player messages."""
 
     def __init__(self, openai_client: openai.Client) -> None:
-        self.lore_context: Optional[str] = None
         self.openai_client = openai_client
         # TODO: Retain a message history for better contextual understanding
 
-    def establish_lore_context(self, lore_context: str) -> str:
-        """Store the shared lore context provided by the player."""
-        self.lore_context = lore_context
-        return lore_context
-
-    def receive_targeting_instructions(
+    def overhear_targeting_instructions(
         self,
         targeting_instructions: str,
     ) -> Optional[Coordinates]:
@@ -30,8 +26,6 @@ class Ally:
         Decode an obfuscated message into target coordinates.
         If we don't trust this message or can't decipher it, we return None.
         """
-        if not self.lore_context:
-            raise ValueError("Lore context not set. Call establish_lore_context first.")
 
         convo = GptConversation(openai_client=self.openai_client)
 
@@ -42,7 +36,7 @@ We're playing an asymmetrical social game that's a hybrid of Battleship and Code
 The opponent ("enemy") has set up a hidden Battleship-style 8x8 board.
 
 Your teammate (the player) can see the board and is trying to help you hit certain cells
-while avoiding others. You are the player's ally artillery team.
+while avoiding others. You are the enemy artillery team.
 
 Unlike traditional Battleship, there's a horrible twist!
 - The enemy can move their ships around!
@@ -219,9 +213,3 @@ If you need to "think aloud" to arrive at the coordinates, do so.
 
         coordinates = Coordinates.from_string(f"{col}{row}")
         return coordinates
-
-    def receive_hit_results(self, entity_hit: Optional[EntityType]) -> None:
-        """
-        Receive the results of our last shot -- what type of entity was hit, if any.
-        """
-        pass
