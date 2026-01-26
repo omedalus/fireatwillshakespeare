@@ -1,7 +1,7 @@
 """Main entry point for Fire At Will Shakespeare."""
 
 from models.board import Board
-from models.entities import Coordinates, EntityType
+from models.entities import Coordinates, EndgameResult, EntityType
 from views.board_renderer import BoardRenderer
 
 
@@ -23,11 +23,11 @@ def main():
         print(f"Ships: {board.ships_remaining()}")
         print(f"Hostages: {board.hostages_remaining()}")
 
-        # Check end conditions before prompting the next shot
-        if board.ships_remaining() == 0:
+        endgame = board.check_endgame()
+        if endgame == EndgameResult.WIN:
             print("All ships neutralized. You win!")
             break
-        if board.hostages_remaining() == 0:
+        if endgame == EndgameResult.LOSE:
             print("All hostages lost. You lose.")
             break
 

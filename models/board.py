@@ -2,7 +2,7 @@
 
 import random
 from typing import List, Optional, Union
-from .entities import Coordinates, EntityType
+from .entities import Coordinates, EndgameResult, EntityType
 
 
 class Board:
@@ -142,3 +142,11 @@ class Board:
     def hostages_remaining(self) -> int:
         """Return the number of hostages still on the board."""
         return sum(1 for row in self.grid for cell in row if cell == EntityType.HOSTAGE)
+
+    def check_endgame(self) -> Optional[EndgameResult]:
+        """Return WIN, LOSE, or None depending on remaining ships and hostages."""
+        if self.ships_remaining() == 0:
+            return EndgameResult.WIN
+        if self.hostages_remaining() == 0:
+            return EndgameResult.LOSE
+        return None

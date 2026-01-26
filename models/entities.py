@@ -12,6 +12,13 @@ class EntityType(Enum):
     HOSTAGE = "hostage"
 
 
+class EndgameResult(Enum):
+    """Possible game outcomes."""
+
+    WIN = "win"
+    LOSE = "lose"
+
+
 @dataclass(frozen=True)
 class Coordinates:
     """A position on the board."""
