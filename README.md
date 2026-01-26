@@ -60,9 +60,9 @@ Victory depends on making your ally understand faster and more accurately than t
 All participants hear the same words.
 
 The asymmetry arises from **interpretive context**, not hidden data:
-- The ally and player share a conceptual frame (a “lore” or narrative context).
-- The enemy does not know which frame is being used.
-- The enemy must guess the frame before they can meaningfully interfere.
+- The player chooses a conceptual frame (a “lore” or narrative context) to encode commands.
+- The AI ally only *applies* that frame; it does not choose or change it.
+- The enemy does not know which frame is being used and must guess it before they can meaningfully interfere.
 
 A good instruction is:
 - Clear enough that the ally converges on the intended action
@@ -82,6 +82,19 @@ Instead, the game rewards:
 - Multi-turn pressure rather than single-turn certainty
 
 Language is treated as **strategy**, not as a transport layer.
+
+## Lore Context: Your Shared Narrative Key
+
+Before a match starts, the player picks a “lore context” the AI ally will use to decode later instructions. Think of it as a cognitive shared key: a movie series, author, band, era, etc. The ally has no agency here—it simply assumes whatever frame you declare.
+
+Your goal is to express target coordinates in language that only resolves with that frame in mind, while staying ambiguous to an eavesdropper who lacks it.
+
+Example (lore: Shakespeare): you want to hit C4. Do **not** say “Fire at C4” (gives it away). Avoid clues that expose the frame (“Capulet and Iago”). Prefer oblique phrasing that is obvious only if Shakespeare is the frame: “The first letter of the Italian girl’s last name, and the number of letters in the first name of the Black man’s friend.” To outsiders it is noise; to an ally primed on Shakespeare it is C4.
+
+Practical loop:
+- Pick a lore context up front (player-only choice).
+- Issue one natural-language instruction per turn, encoded in that lore.
+- The enemy hears the same words and tries to guess/reframe them; the ally fires or holds based on the shared frame.
 
 ---
 
