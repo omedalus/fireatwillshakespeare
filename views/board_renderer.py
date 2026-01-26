@@ -45,7 +45,7 @@ class BoardRenderer:
                 symbol = self.SYMBOLS.get(entity, "?") if entity else "?"
                 row_chars.append(symbol)
 
-            row_str = f"{row} │ " + " ".join(row_chars)
+            row_str = f"{row + 1} │ " + " ".join(row_chars)
             lines.append(row_str)
 
         return "\n".join(lines)
