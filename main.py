@@ -77,7 +77,9 @@ What lore context will you and your ally use to encode your commands?
             print("All hostages lost. You lose.")
             break
 
-        user_input = input("Enter target (e.g., B3) or 'q' to quit: ").strip()
+        user_input = input(
+            "Enter your obfuscated targeting command (or 'q' to quit): "
+        ).strip()
         if user_input.lower() in {"q", "quit", "exit"}:
             print("Exiting game.")
             break
