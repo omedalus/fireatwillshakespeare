@@ -11,7 +11,6 @@ class EntityType(Enum):
     EMPTY = "empty"
     SHIP = "ship"
     HOSTAGE = "hostage"
-    HIT = "hit"  # After firing
 
 
 @dataclass

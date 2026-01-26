@@ -1,6 +1,6 @@
 """Board representation and operations."""
 
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Union, overload
 from .entities import Entity, EntityType, Position
 
 
@@ -27,7 +27,6 @@ class Board:
         ]
         self.ships: List[Position] = []
         self.hostages: List[Position] = []
-        self.hits: List[Position] = []
 
     def place_ship(self, row: int, col: int) -> bool:
         """
@@ -50,7 +49,11 @@ class Board:
         self.ships.append(Position(row, col))
         return True
 
-    def place_hostage(self, row: int, col: int) -> bool:
+    def place_hostage(
+        self,
+        row: int,
+        col: int,
+    ) -> bool:
         """
         Place a hostage at the given position.
 
@@ -71,9 +74,58 @@ class Board:
         self.hostages.append(Position(row, col))
         return True
 
-    def fire(self, row: int, col: int) -> Optional[EntityType]:
+    def fire(
+        self,
+        row: Union[int, str],
+        col: Optional[int] = None,
+    ) -> Optional[EntityType]:
         """
         Fire at a position.
+
+        Can be called in two ways:
+        - fire(row: int, col: int): Fire at specific row and column indices
+        - fire(coordinate: str): Fire at coordinate in format [A-H][1-8], e.g., "A1"
+
+        Args:
+            row: Row index (int) or coordinate string (str)
+            col: Column index (required if row is int, ignored if row is str)
+
+        Returns:
+            The entity type that was hit, or None if position invalid
+        """
+        # Handle string coordinate format
+        if isinstance(row, str):
+            coordinate = row.upper()
+            if len(coordinate) != 2:
+                return None
+
+            letter = coordinate[0]
+            try:
+                number = int(coordinate[1])
+            except ValueError:
+                return None
+
+            # Convert letter to column (A=0, B=1, ..., H=7)
+            if letter < "A" or letter > "H":
+                return None
+            col_idx = ord(letter) - ord("A")
+
+            # Convert number to row (1=0, 2=1, ..., 8=7)
+            if number < 1 or number > 8:
+                return None
+            row_idx = number - 1
+
+            return self._execute_fire(row_idx, col_idx)
+
+        # Handle numeric coordinate format
+        if col is None:
+            return None
+
+        return self._execute_fire(row, col)
+
+    def _execute_fire(self, row: int, col: int) -> Optional[EntityType]:
+        """
+        Internal method to execute a fire action.
 
         Args:
             row: Row index
@@ -89,11 +141,10 @@ class Board:
 
         if hit_type == EntityType.SHIP:
             self.ships.remove(Position(row, col))
+            self.grid[row][col] = EntityType.EMPTY
         elif hit_type == EntityType.HOSTAGE:
             self.hostages.remove(Position(row, col))
-
-        self.grid[row][col] = EntityType.HIT
-        self.hits.append(Position(row, col))
+            self.grid[row][col] = EntityType.EMPTY
 
         return hit_type
 
@@ -120,7 +171,7 @@ class Board:
 
         entity_type = self.grid[from_row][from_col]
 
-        if entity_type == EntityType.EMPTY or entity_type == EntityType.HIT:
+        if entity_type == EntityType.EMPTY:
             return False
 
         if self.grid[to_row][to_col] != EntityType.EMPTY:

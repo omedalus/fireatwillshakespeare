@@ -1,8 +1,8 @@
 """ASCII rendering for the game board."""
 
 from typing import Optional
-from ..models.board import Board
-from ..models.entities import EntityType
+from models.board import Board
+from models.entities import EntityType
 
 
 class BoardRenderer:
@@ -13,7 +13,6 @@ class BoardRenderer:
         EntityType.EMPTY: "·",
         EntityType.SHIP: "S",
         EntityType.HOSTAGE: "H",
-        EntityType.HIT: "X",
     }
 
     def __init__(self, board: Board):
@@ -34,10 +33,10 @@ class BoardRenderer:
         """
         lines = []
 
-        # Header with column numbers
-        header = "   " + " ".join(str(i) for i in range(self.board.cols))
+        # Header with column letters
+        header = "    " + " ".join(chr(ord("A") + i) for i in range(self.board.cols))
         lines.append(header)
-        lines.append("  " + "─" * (self.board.cols * 2))
+        lines.append("   " + "─" * (self.board.cols * 2))
 
         # Board rows
         for row in range(self.board.rows):
@@ -66,7 +65,6 @@ class BoardRenderer:
             "Legend:",
             f"  {self.SYMBOLS[EntityType.SHIP]} = Ship",
             f"  {self.SYMBOLS[EntityType.HOSTAGE]} = Hostage",
-            f"  {self.SYMBOLS[EntityType.HIT]} = Hit",
             f"  {self.SYMBOLS[EntityType.EMPTY]} = Empty",
         ]
 
