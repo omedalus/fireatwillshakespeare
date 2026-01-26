@@ -1,7 +1,8 @@
 """Main entry point for Fire At Will Shakespeare."""
 
+from agents.ally import Ally
 from models.board import Board
-from models.entities import Coordinates, EndgameResult, EntityType
+from models.entities import EndgameResult, EntityType
 from views.board_renderer import BoardRenderer
 
 
@@ -57,6 +58,9 @@ What lore context will you and your ally use to encode your commands?
     ).strip()
     print()
 
+    ally = Ally()
+    ally.establish_lore_context(lore_context)
+
     # Create a board and initialize with random ships and hostages
     board = Board(rows=8, cols=8)
     board.setup(num_ships=5, num_hostages=3)
@@ -83,9 +87,10 @@ What lore context will you and your ally use to encode your commands?
         if user_input.lower() in {"q", "quit", "exit"}:
             print("Exiting game.")
             break
+        print("Ally receiving and decoding your message...")
 
         try:
-            coordinates = Coordinates.from_string(user_input)
+            coordinates = ally.receive_message(user_input)
         except ValueError as exc:
             print(f"Invalid input: {exc}")
             print()
