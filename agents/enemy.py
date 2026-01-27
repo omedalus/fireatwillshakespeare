@@ -53,7 +53,7 @@ the targeting coordinates without knowing the lore context.
 
 Our job is to see if we can understand it anyway! :D
 
-We also have a small reserve of Chaff that can be deployed to one square to block
+We can also deploy Chaff to one square to block
 incoming artillery for a single turn. This is an optional countermeasure we can
 choose to use when we think we've inferred the target.
 """
