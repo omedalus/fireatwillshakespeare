@@ -4,7 +4,7 @@
 
 The player can see the entire battlefield. Their ally cannot. The enemy can hear everything.
 
-Every turn, the player issues a natural-language instruction over an open channel. That instruction is heard by both an allied artillery unit and an adversary. The ally must decide whether and where to fire based solely on the instruction. The enemy hears the same words and may attempt countermeasures, or even spoof messages to trick the ally into hitting hostages.
+Every turn, the player issues a natural-language instruction over an open channel. That instruction is heard by both an allied artillery unit and an adversary. The ally must decide whether and where to fire based solely on the instruction. The enemy hears the same words and may attempt countermeasures, or even spoof messages to trick the ally into hitting hostages. The enemy also holds a small stock of Chaff that can be deployed to shield a single square from artillery for one turn.
 
 The core challenge is not secrecy, but **asymmetric interpretation**.
 
@@ -39,7 +39,7 @@ Victory depends on making your ally understand faster and more accurately than t
    The ally does not know which messages are genuine.
 
 4. **Enemy Counterplay**  
-   The enemy cannot move ships or hostages after placement. Their counterplay is limited to deduction and disruptive or deceptive messages over the same channel.
+   The enemy cannot move ships or hostages after placement. Their counterplay largely consists of sending spoofed messages over the  channel to try to trick the allied artillery into destroying the hostages. The enemy also has a limited pool of Chaff deployments that can protect one chosen square for a single turn.
 
 5. **Ally Decision**  
    The ally may:
