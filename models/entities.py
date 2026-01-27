@@ -10,6 +10,7 @@ class EntityType(Enum):
     EMPTY = "empty"
     SHIP = "ship"
     HOSTAGE = "hostage"
+    CHAFF = "chaff"
 
 
 class EndgameResult(Enum):

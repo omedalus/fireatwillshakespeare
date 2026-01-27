@@ -26,6 +26,7 @@ class Board:
         self.grid: List[List[EntityType]] = [
             [EntityType.EMPTY for _ in range(cols)] for _ in range(rows)
         ]
+        self.chaffed_square: Optional[Coordinates] = None
 
     def setup(self, num_ships: int, num_hostages: int) -> None:
         """
@@ -82,10 +83,15 @@ class Board:
             coordinates: Coordinates instance of target position
 
         Returns:
-            The entity type that was hit, or None if position invalid
+            The entity type that was hit (SHIP, HOSTAGE, CHAFF, or EMPTY),
+            or None if position invalid
         """
         if not self._is_valid_position(coordinates):
             return None
+
+        # Check if this square is protected by chaff
+        if self.chaffed_square == coordinates:
+            return EntityType.CHAFF
 
         hit_type = self.grid[coordinates.row][coordinates.col]
 
@@ -150,3 +156,26 @@ class Board:
         if self.hostages_remaining() == 0:
             return EndgameResult.LOSE
         return None
+
+    def deploy_chaff(self, coordinates: Coordinates) -> bool:
+        """
+        Deploy chaff at a square to protect it for one turn.
+
+        Only one square can be chaffed at a time. If chaff is already deployed,
+        this call replaces the previous deployment.
+
+        Args:
+            coordinates: Position to deploy chaff at
+
+        Returns:
+            True if deployment succeeded, False if position invalid
+        """
+        if not self._is_valid_position(coordinates):
+            return False
+
+        self.chaffed_square = coordinates
+        return True
+
+    def clear_chaff(self) -> None:
+        """Clear the chaff deployment. Called at the beginning of each turn."""
+        self.chaffed_square = None
