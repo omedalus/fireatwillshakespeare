@@ -157,6 +157,10 @@ class Board:
             return EndgameResult.LOSE
         return None
 
+    def can_deploy_chaff(self) -> bool:
+        """Return True if chaff can be deployed (more than one ship remains)."""
+        return self.ships_remaining() > 1
+
     def deploy_chaff(self, coordinates: Coordinates) -> bool:
         """
         Deploy chaff at a square to protect it for one turn.
@@ -168,9 +172,12 @@ class Board:
             coordinates: Position to deploy chaff at
 
         Returns:
-            True if deployment succeeded, False if position invalid
+            True if deployment succeeded, False if position invalid or chaffing not allowed
         """
         if not self._is_valid_position(coordinates):
+            return False
+
+        if not self.can_deploy_chaff():
             return False
 
         self.chaffed_square = coordinates

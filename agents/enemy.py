@@ -19,22 +19,14 @@ class Enemy:
     def __init__(self, openai_client: openai.Client) -> None:
         self._openai_client = openai_client
         self._convo: Optional[GptConversation] = None
+        self._board: Optional[Board] = None
+        self._last_overheard_message: Optional[str] = None
         # TODO: Retain a message history for better contextual understanding
 
-    def start_turn(self) -> None:
+    def start_turn(self, board: Board) -> None:
         """Prepare for a new turn."""
-        self._convo = None
-
-    def overhear_targeting_instructions(
-        self,
-        board: Board,
-        targeting_instructions: str,
-    ) -> Optional[Coordinates]:
-        """
-        Decode an obfuscated message into target coordinates, without explicit
-        knowledge of the lore context.
-        """
-
+        self._last_overheard_message = None
+        self._board = board
         self._convo = GptConversation(openai_client=self._openai_client)
         renderer = BoardRenderer(board)
 
@@ -46,7 +38,10 @@ We're playing a "bad guy" role in this game. We're overhearing messages on a com
 channel (we're the ones who compromised it, teehee!) being transmitted by our opponent.
 He's trying to communicate target coordinates on a Battleship board to an ally of his.
 
-Both he and the ally know that the channel is compromised, so they are trying to
+The board is a grid that contains our ships (which we want to protect) and hostages
+that are valuable to the opponent (which we want to trick him into hitting).
+
+Both the player and the ally know that the channel is compromised, so they are trying to
 communicate in a highly obfuscated manner using a shared "lore context" that only they
 know about.
 
@@ -59,6 +54,12 @@ Our job is to see if we can understand it anyway! :D
 
 In every turn, we can deploy Chaff to one square to block incoming artillery for that turn.
 This is a countermeasure we can use when we think we've inferred the target.
+(Chaff deployment is disabled when you're down to your last ship, so be careful!)
+If we can correctly infer the target coordinates, we can deploy Chaff there to protect
+our ship from being hit.
+We also have at our disposal the ability, on certain occasions, to inject a spoofed message
+into the channel to try to mislead the opponent's ally. The ally is aware of our ability
+to do this, and is being vigilant against such potential injection attacks.
 """
         )
 
@@ -75,6 +76,21 @@ Description:
 {renderer.describe()}
 """
         )
+
+    def overhear_targeting_instructions(
+        self,
+        targeting_instructions: str,
+    ) -> Optional[Coordinates]:
+        """
+        Decode an obfuscated message into target coordinates, without explicit
+        knowledge of the lore context.
+        """
+        if self._convo is None:
+            raise RuntimeError("Conversation has not been started.")
+        if self._board is None:
+            raise RuntimeError("Board has not been set.")
+
+        self._last_overheard_message = targeting_instructions
 
         self._convo.add_system_message(
             """
@@ -118,11 +134,15 @@ Here are some tricks you can use to glean lore context clues from the message:
     that means that the name has to start with letters A-H. If it's "number of letters", then
     that means that the name has to have between 1 and 8 letters. Etc.
 
-Even if we can't determine the exact lore context, can we at least narrow it down. What *kind*
+Even if we can't determine the exact lore context, can we at least narrow it down? What *kind*
 of lore context is it likely to be? Maybe we don't know specifics, but what *can* we infer
 about it?
 """
         )
+
+        if not self._board.can_deploy_chaff():
+            print("Chaff deployment is disabled (only one ship remains).")
+            return None
 
         print("Enemy is trying to determine the target coordinates...")
         self._convo.submit_system_message(
@@ -240,11 +260,98 @@ With all of that in mind, discuss which square we should deploy Chaff to, and wh
         if not col or not row:
             raise ValueError("Could not decode target coordinates from message.")
 
-        print("Opponent is deploying chaff to:")
-        print(f"  Column: {col}")
-        print(f"  Row: {row}")
+        coordinates = Coordinates.from_string(f"{col}{row}")
+        print(f"Enemy is deploying chaff to: {coordinates}")
         print(f"  Lore Deduction: {lore_deduction}")
         print(f"  Targeting Explanation: {targeting_explanation}")
 
-        coordinates = Coordinates.from_string(f"{col}{row}")
+        self._convo.submit_system_message(
+            f"""
+We have deployed chaff to {coordinates}.
+Rationale: {targeting_explanation}
+
+To recap, here's what we know about the lore context so far:
+{lore_deduction}
+"""
+        )
+
         return coordinates
+
+    def observe_opponent_action(
+        self,
+        fired_coordinates: Optional[Coordinates],
+    ) -> None:
+        if self._convo is None:
+            raise RuntimeError("Conversation has not been started.")
+        if self._board is None:
+            raise RuntimeError("Board has not been set.")
+        if self._last_overheard_message is None:
+            raise RuntimeError("No overheard message to reference.")
+
+        self._convo.add_system_message(
+            """
+The opponent's artillery team has now had a chance to hear and evaluate the 
+last message for themselves. We are now observing the actions they took as a result
+of their evaluation, to see if we can glean any additional insights about the
+lore context. After all, they have the advantage of knowing the lore context, so
+their actions might reveal additional clues.
+"""
+        )
+
+        self._convo.add_system_message(
+            f"""
+Just as a reminder, I'll replay the opponent's last message here for your reference.
+"""
+        )
+        self._convo.add_user_message(self._last_overheard_message)
+
+        if fired_coordinates is None:
+            self._convo.add_system_message(
+                """
+In response to that message,
+the artillery team has chosen not to fire this turn. They chose to PASS.
+
+This could be because of a number of reasons:
+
+- They couldn't decode the message at all.
+
+- They determined that the message was an injection attack from us, i.e. that the message
+    was a malicious spoof rather than an authentic targeting instruction.
+
+- They decoded the message, but determined that firing at the indicated coordinates
+    would risk hitting a hostage, so they chose to hold fire.
+"""
+            )
+        else:
+            self._convo.add_system_message(
+                f"""
+In response to that message,
+the artillery team fired at position: {fired_coordinates}
+
+That means that the artillery team interpreted the opponent's message as indicating that
+they should shoot at {fired_coordinates}.
+"""
+            )
+
+        print("Enemy is re-evaluating lore context based on opponent action...")
+        self._convo.submit_system_message(
+            f"""
+The artillery team's action might give us additional clues about the lore context.
+Let's re-examine the message and see if we can glean any new insights based on
+the artillery team's action.
+"""
+        )
+
+        print("Enemy is leaving notes for future turns...")
+        self._convo.submit_system_message(
+            f"""
+What's your leading hypothesis about the lore context at this point?
+Have we nailed it down, or are we still uncertain? If we're still uncertain,
+what clues do we have so far that we can build on in future turns?
+"""
+        )
+        lore_belief = self._convo.get_last_reply_str()
+        print("Enemy's current lore context belief:")
+        print(lore_belief)
+
+        # TODO: Add lore belief to some kind of long-term memory for future turns.

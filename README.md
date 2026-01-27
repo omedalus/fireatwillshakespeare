@@ -40,7 +40,7 @@ Victory depends on making your ally understand faster and more accurately than t
    Additionally, the ally is stateless: a new crew is rotated in after each shot, so they have no memory of previous turns or patterns. They only know the lore context; but they don't remember previous commands, or the results of previous shots.
 
 4. **Enemy Counterplay**  
-   The enemy cannot move ships or hostages after placement. Their counterplay largely consists of sending spoofed messages over the channel to try to trick the allied artillery into destroying the hostages. The enemy can also deploy Chaff to protect one chosen square for a single turn.
+   The enemy cannot move ships or hostages after placement. Their counterplay largely consists of sending spoofed messages over the channel to try to trick the allied artillery into destroying the hostages. The enemy can also deploy Chaff in every turn to protect one chosen square for that turn -- but Chaff cannot be deployed if the enemy is down to their last ship.
 
 5. **Ally Decision**  
    The ally may:

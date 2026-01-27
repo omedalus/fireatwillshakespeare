@@ -89,8 +89,8 @@ What lore context will you and your ally use to encode your commands?
     renderer = BoardRenderer(board)
 
     while True:
-        ally.start_turn()
-        enemy.start_turn()
+        ally.start_turn(board)
+        enemy.start_turn(board)
 
         print(renderer.render_with_legend())
         print(renderer.describe())
@@ -116,7 +116,7 @@ What lore context will you and your ally use to encode your commands?
         print("Enemy is overhearing the message...")
         chaff_coords = None
         try:
-            chaff_coords = enemy.overhear_targeting_instructions(board, user_input)
+            chaff_coords = enemy.overhear_targeting_instructions(user_input)
         except ValueError as exc:
             print(f"Error during Enemy phase: {exc}")
             print()
@@ -126,14 +126,14 @@ What lore context will you and your ally use to encode your commands?
             print(f"Enemy has deployed chaff at {chaff_coords} to block your shot.")
             print()
 
-        coordinates = None
+        fire_coordinates = None
         try:
-            coordinates = ally.receive_targeting_instructions(user_input)
+            fire_coordinates = ally.receive_targeting_instructions(user_input)
         except ValueError as exc:
             print(f"Error during Ally phase: {exc}")
             print()
 
-        if not coordinates:
+        if not fire_coordinates:
             print(
                 "Ally passes this turn. They either could not decode the message, "
                 "or determined that it was an injection attack."
@@ -141,7 +141,7 @@ What lore context will you and your ally use to encode your commands?
             print()
             continue
 
-        hit = board.fire(coordinates)
+        hit = board.fire(fire_coordinates)
         if hit is None:
             print("That coordinate is outside the board.")
         elif hit == EntityType.EMPTY:
@@ -153,8 +153,8 @@ What lore context will you and your ally use to encode your commands?
         elif hit == EntityType.HOSTAGE:
             print("Oh no: you hit a hostage.")
 
-        # The enemy can re-evaluate their lore context here based on the ally's action
-        # TODO: Do this.
+        # The enemy can now re-evaluate their lore context here based on the ally's action
+        enemy.observe_opponent_action(fire_coordinates)
 
         print()
 

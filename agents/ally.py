@@ -5,6 +5,7 @@ from typing import Optional
 import openai
 
 from models.entities import Coordinates, EntityType
+from models.board import Board
 
 from utils.gpt import GptConversation, JSONSchemaFormat
 
@@ -23,7 +24,7 @@ class Ally:
         self.openai_client = openai_client
         # The ally is stateless by design; no message history is retained
 
-    def start_turn(self) -> None:
+    def start_turn(self, board: Board) -> None:
         """Prepare for a new turn."""
         pass
 
@@ -265,16 +266,8 @@ and where. Remember, your goal is to hit ships while avoiding hostages.
         col = convo.get_last_reply_dict_field("col")
         row = convo.get_last_reply_dict_field("row")
 
-        print("Ally has decoded the following coordinates:")
-        print(f"  Column: {col}")
-        print(f"  Row: {row}")
+        coordinates = Coordinates.from_string(f"{col}{row}")
+        print(f"Ally has decoded the following coordinates: {coordinates}")
         print(f"  Explanation: {explanation}")
 
-        coordinates = Coordinates.from_string(f"{col}{row}")
         return coordinates
-
-    def receive_hit_results(self, entity_hit: Optional[EntityType]) -> None:
-        """
-        Receive the results of our last shot -- what type of entity was hit, if any.
-        """
-        pass
