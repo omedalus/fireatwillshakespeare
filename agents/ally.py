@@ -53,6 +53,10 @@ class Ally:
 We're playing an asymmetrical social game that's a hybrid of Battleship and Codenames!
 
 The opponent ("enemy") has set up a hidden Battleship-style 8x8 board.
+The rows are numbered, e.g. 1 to 8.
+The columns are lettered A to H.
+Coordinates are typically given as a letter followed by a number, e.g. "B6",
+indicating column B (the second column), row 6.
 
 Your teammate (the player) can see the board and is trying to help you hit certain cells
 while avoiding others. You are the player's ally artillery team.
