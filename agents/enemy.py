@@ -135,6 +135,9 @@ some information leak about the square they're targeting.
 We not only need to glean the target coordinates, but also whether the opponent is trying to
 tell his ally to hit a ship, or whether he's trying to tell them to avoid hitting a hostage.
 
+It's also possible that the opponent is trying to tell his ally multiple coordinates at once.
+This is a less likely scenario, but it's worth considering.
+
 Here are some examples of ways that the message might reference the board state:
 - If the message mentions the "number of letters in X", then that number is probably not 1 or 2.
     After all, there are very few 1- or 2-letter names. Therefore, the number is probably 
@@ -149,6 +152,11 @@ that to decode the message directly.
 So, let's try to do it! Let's figure out:
 - What target coordinates is the opponent trying to convey?
 - Is he trying to tell his ally to hit a ship, or avoid hitting a hostage?
+
+Keep in mind that the opponent is engaged in information warfare here. He knows that we're
+listening in, so he's deliberately trying to make it hard for us to understand the message.
+He might be messing with us. He might be transmitting false information. He might be
+trying to trick us into misinterpreting the message.
 
 First, discuss your reasoning. If you need to do any "scratchpad"
 calculations, do so. If you need to "think aloud" to arrive at the coordinates, do so.
