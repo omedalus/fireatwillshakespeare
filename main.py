@@ -89,6 +89,9 @@ What lore context will you and your ally use to encode your commands?
     renderer = BoardRenderer(board)
 
     while True:
+        ally.start_turn()
+        enemy.start_turn()
+
         print(renderer.render_with_legend())
         print(renderer.describe())
         print()
@@ -111,14 +114,24 @@ What lore context will you and your ally use to encode your commands?
             break
 
         print("Enemy is overhearing the message...")
-        enemy.overhear_targeting_instructions(board, user_input)
+        chaff_coords = None
+        try:
+            chaff_coords = enemy.overhear_targeting_instructions(board, user_input)
+        except ValueError as exc:
+            print(f"Error during Enemy phase: {exc}")
+            print()
 
+        if chaff_coords:
+            board.deploy_chaff(chaff_coords)
+            print(f"Enemy has deployed chaff at {chaff_coords} to block your shot.")
+            print()
+
+        coordinates = None
         try:
             coordinates = ally.receive_targeting_instructions(user_input)
         except ValueError as exc:
-            print(f"Invalid input: {exc}")
+            print(f"Error during Ally phase: {exc}")
             print()
-            continue
 
         if not coordinates:
             print(
@@ -133,10 +146,15 @@ What lore context will you and your ally use to encode your commands?
             print("That coordinate is outside the board.")
         elif hit == EntityType.EMPTY:
             print("Miss: empty water.")
+        elif hit == EntityType.CHAFF:
+            print("Shot blocked by chaff!")
         elif hit == EntityType.SHIP:
             print("Hit: ship destroyed!")
         elif hit == EntityType.HOSTAGE:
             print("Oh no: you hit a hostage.")
+
+        # The enemy can re-evaluate their lore context here based on the ally's action
+        # TODO: Do this.
 
         print()
 

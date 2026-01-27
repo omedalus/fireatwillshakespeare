@@ -21,6 +21,10 @@ class Enemy:
         self._convo: Optional[GptConversation] = None
         # TODO: Retain a message history for better contextual understanding
 
+    def start_turn(self) -> None:
+        """Prepare for a new turn."""
+        self._convo = None
+
     def overhear_targeting_instructions(
         self,
         board: Board,
@@ -53,9 +57,8 @@ the targeting coordinates without knowing the lore context.
 
 Our job is to see if we can understand it anyway! :D
 
-We can also deploy Chaff to one square to block
-incoming artillery for a single turn. This is an optional countermeasure we can
-choose to use when we think we've inferred the target.
+In every turn, we can deploy Chaff to one square to block incoming artillery for that turn.
+This is a countermeasure we can use when we think we've inferred the target.
 """
         )
 
@@ -164,82 +167,84 @@ I'd like to hear your thoughts as you go.
 """
         )
 
-        print(self._convo.get_last_reply_str())
-        exit(888)
-        # TEMP DEBUG
-
-        self._convo.submit(
-            json_response=JSONSchemaFormat(
-                name="is_injection_attack",
-                description="JSON formalization of whether this message is an injection attack.",
-                schema={
-                    "is_injection_attack": bool,
-                    "why_we_believe_this_is_an_injection_attack": (
-                        str,
-                        (
-                            "If this is an injection attack, briefly explain why we believe that. "
-                            "If it's not an injection attack, this field can be an empty string."
-                        ),
-                    ),
-                },
-            )
-        )
-        is_injection_attack = self._convo.get_last_reply_dict_field(
-            "is_injection_attack", False
-        )
-        if is_injection_attack:
-            # TODO: Update our history to record that we detected an injection attack.
-            print("Ally has determined this is an injection attack.")
-            print(
-                self._convo.get_last_reply_dict_field(
-                    "why_we_believe_this_is_an_injection_attack", ""
-                )
-            )
-            return None
-
-        print("Ally has determined that this message is valid. Decoding...")
+        print("Enemy is deciding where to deploy chaff...")
         self._convo.submit_system_message(
             """
-You've determined that this is a genuine communication from the player.
-Decode it into a set of target coordinates (like "B6") using the shared lore context.
-First discuss your reasoning. If you need to do any "scratchpad" calculations, do so.
-If you need to "think aloud" to arrive at the coordinates, do so.
+At this point, we should decide where to deploy our Chaff countermeasure.
+The player has sent the message, and we've done our best to decode it.
+The player's artillery team hasn't fired yet, fortunately. That means that we can
+still deploy Chaff to one square on the board to block incoming artillery for this turn.
+
+We should decide which square to Chaff based on our best guess of where the player
+is trying to target.
+
+Remember, we only get to deploy Chaff to one square per turn. We should pick the square
+that we think is most likely to be targeted by the player's artillery, *if* that square
+contains one of our ships. If we're not confident about where the player is targeting,
+we should pick a square that contains one of our ships for good measure.
+
+If the player is targeting a hostage for some reason, we don't need to Chaff that square,
+since we want the artillery to hit the hostages. We're the bad guys, remember! :)
+
+If the player is targeting an empty square, and we're very confident about that, then we
+might want to Chaff it just to mess with them (they'll think we're protecting a ship there!).
+
+Basically, just remember that our goal is to protect our ships from being hit by artillery,
+while letting the hostages be hit -- all in the context of this information warfare scenario.
+
+With all of that in mind, discuss which square we should deploy Chaff to, and why.
 """
         )
 
         self._convo.submit(
             json_response=JSONSchemaFormat(
-                name="target_coordinates",
-                description="The decoded target coordinates.",
+                name="chaff_deployment",
+                description="JSON formalization of where to deploy chaff this turn.",
                 schema={
                     "col": (
                         str,
-                        "The letter of the target column (A-H)",
+                        "The letter of the column (A-H) of the desired chaff square.",
                         ["A", "B", "C", "D", "E", "F", "G", "H"],
                     ),
                     "row": (
                         int,
-                        "The number of the target row (1-8)",
+                        "The number of the row (1-8) of the desired chaff square.",
                         (1, 8),
                     ),
-                    "explanation": (
+                    "lore_deduction": (
                         str,
-                        "A brief explanation of how you derived these coordinates.",
+                        (
+                            "A brief summary of what we've inferred about the lore context "
+                            "so far. If we've nailed the lore context, state it explicitly. "
+                            "If we aren't sure yet, then write some notes about the clues "
+                            "we've got so far, so that we can resume investigating later."
+                        ),
+                    ),
+                    "targeting_explanation": (
+                        str,
+                        (
+                            "A brief explanation of the reasoning behind our decision of "
+                            "where to deploy chaff. Include any relevant inferences about "
+                            "the target coordinates that informed our decision."
+                        ),
                     ),
                 },
             )
         )
         col = self._convo.get_last_reply_dict_field("col")
         row = self._convo.get_last_reply_dict_field("row")
-        explanation = self._convo.get_last_reply_dict_field("explanation")
+        lore_deduction = self._convo.get_last_reply_dict_field("lore_deduction")
+        targeting_explanation = self._convo.get_last_reply_dict_field(
+            "targeting_explanation"
+        )
         if not col or not row:
             raise ValueError("Could not decode target coordinates from message.")
 
-        print("Ally has decoded the following coordinates:")
+        print("Opponent is deploying chaff to:")
         print(f"  Column: {col}")
         print(f"  Row: {row}")
-        print(f"  Explanation: {explanation}")
-        # TODO: Add this to our message history.
+        print(f"  Lore Deduction: {lore_deduction}")
+        print(f"  Targeting Explanation: {targeting_explanation}")
 
         coordinates = Coordinates.from_string(f"{col}{row}")
         return coordinates
