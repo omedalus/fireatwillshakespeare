@@ -37,6 +37,7 @@ Victory depends on making your ally understand faster and more accurately than t
 3. **Adversarial Injection**  
    The enemy may also issue instructions on the same channel.  
    The ally does not know which messages are genuine.
+   Additionally, the ally is stateless: a new crew is rotated in after each shot, so they have no memory of previous turns or patterns. They only know the lore context; but they don't remember previous commands, or the results of previous shots.
 
 4. **Enemy Counterplay**  
    The enemy cannot move ships or hostages after placement. Their counterplay largely consists of sending spoofed messages over the  channel to try to trick the allied artillery into destroying the hostages. The enemy also has a limited pool of Chaff deployments that can protect one chosen square for a single turn.

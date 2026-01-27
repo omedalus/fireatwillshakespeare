@@ -63,6 +63,11 @@ SAY: "The first letter of the Italian girl's family name, and the number of
     vague to anyone who doesn't know that we're talking about Shakespeare, but
     it's extremely specific if you realize that Shakespeare is the context.)
 
+Important: Due to military policy, your artillery team rotates out after each shot.
+A fresh crew of green soldiers arrives for every turn with no memory of previous
+instructions or patterns. This means you cannot rely on them learning or remembering
+your code over time—you must make each instruction clear *in isolation*.    
+
 So, with all that in mind...
 What lore context will you and your ally use to encode your commands?
 """
