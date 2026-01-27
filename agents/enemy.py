@@ -20,12 +20,12 @@ class Enemy:
         self._openai_client = openai_client
         self._convo: Optional[GptConversation] = None
         self._board: Optional[Board] = None
-        self._last_overheard_message: Optional[str] = None
-        # TODO: Retain a message history for better contextual understanding
+
+        self._event_history = []
 
     def start_turn(self, board: Board) -> None:
         """Prepare for a new turn."""
-        self._last_overheard_message = None
+        self._event_history.append({})
         self._board = board
         self._convo = GptConversation(openai_client=self._openai_client)
         renderer = BoardRenderer(board)
@@ -63,7 +63,29 @@ to do this, and is being vigilant against such potential injection attacks.
 """
         )
 
-        # TODO: Add previous overheard messages to the context here.
+        # Add previous events here.
+        if len(self._event_history) > 1:
+            self._convo.add_system_message(
+                "Determining the lore context is an ongoing deductive process that "
+                "involves piecing together clues over multiple turns. "
+                "Here are some notes from previous turns to help you get up to speed."
+            )
+            for event in self._event_history:
+                if "targeting_instructions" in event:
+                    self._convo.add_user_message(event.get("targeting_instructions"))
+                if "fired_coordinates" in event:
+                    fired_coordinates = event.get("fired_coordinates")
+                    if fired_coordinates is None:
+                        self._convo.add_system_message(
+                            "In response to that message, the artillery team chose to PASS."
+                        )
+                    else:
+                        self._convo.add_system_message(
+                            f"In response to that message, the artillery team fired at position: {fired_coordinates}"
+                        )
+                if "lore_belief" in event:
+                    lore_belief = event.get("lore_belief") or "(No notes provided.)"
+                    self._convo.add_assistant_message(lore_belief)
 
         self._convo.add_system_message(
             f"""
@@ -90,7 +112,14 @@ Description:
         if self._board is None:
             raise RuntimeError("Board has not been set.")
 
-        self._last_overheard_message = targeting_instructions
+        if (
+            self._event_history is None
+            or len(self._event_history) == 0
+            or self._event_history[-1] is None
+        ):
+            raise RuntimeError("Event history has not been initialized.")
+
+        self._event_history[-1]["targeting_instructions"] = targeting_instructions
 
         self._convo.add_system_message(
             """
@@ -265,6 +294,8 @@ With all of that in mind, discuss which square we should deploy Chaff to, and wh
         print(f"  Lore Deduction: {lore_deduction}")
         print(f"  Targeting Explanation: {targeting_explanation}")
 
+        self._event_history[-1]["lore_belief"] = lore_deduction
+
         self._convo.submit_system_message(
             f"""
 We have deployed chaff to {coordinates}.
@@ -285,8 +316,13 @@ To recap, here's what we know about the lore context so far:
             raise RuntimeError("Conversation has not been started.")
         if self._board is None:
             raise RuntimeError("Board has not been set.")
-        if self._last_overheard_message is None:
-            raise RuntimeError("No overheard message to reference.")
+
+        if (
+            self._event_history is None
+            or len(self._event_history) == 0
+            or self._event_history[-1] is None
+        ):
+            raise RuntimeError("Event history has not been initialized.")
 
         self._convo.add_system_message(
             """
@@ -303,7 +339,9 @@ their actions might reveal additional clues.
 Just as a reminder, I'll replay the opponent's last message here for your reference.
 """
         )
-        self._convo.add_user_message(self._last_overheard_message)
+        self._convo.add_user_message(
+            self._event_history[-1].get("targeting_instructions")
+        )
 
         if fired_coordinates is None:
             self._convo.add_system_message(
@@ -354,4 +392,4 @@ what clues do we have so far that we can build on in future turns?
         print("Enemy's current lore context belief:")
         print(lore_belief)
 
-        # TODO: Add lore belief to some kind of long-term memory for future turns.
+        self._event_history[-1]["lore_belief"] = lore_belief
