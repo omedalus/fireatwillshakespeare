@@ -46,8 +46,8 @@ the lore context itself!
 
 Example: The lore context is: "William Shakespeare's plays"
 Suppose you want to target coordinate "C4".
-DON'T SAY: "Fire at C4." (The enemy will understand this directly, and will simply
-    move their ships away from that position.)
+DON'T SAY: "Fire at C4." (The enemy will understand this directly and can take
+    protective measures.)
 DON'T SAY: "The first letter of 'Capulet' and the number of letters in 'Iago'."
     (This is no better than just outright stating the coordinates, because
     even an enemy who doesn't know the lore context can clearly see that the

@@ -4,7 +4,7 @@
 
 The player can see the entire battlefield. Their ally cannot. The enemy can hear everything.
 
-Every turn, the player issues a natural-language instruction over an open channel. That instruction is heard by both an allied artillery unit and an adversary. The ally must decide whether and where to fire based solely on the instruction. The enemy, hearing the same words, may reposition assets in an attempt to bait a catastrophic mistake.
+Every turn, the player issues a natural-language instruction over an open channel. That instruction is heard by both an allied artillery unit and an adversary. The ally must decide whether and where to fire based solely on the instruction. The enemy hears the same words and may attempt countermeasures, or even spoof messages to trick the ally into hitting hostages.
 
 The core challenge is not secrecy, but **asymmetric interpretation**.
 
@@ -32,16 +32,14 @@ Victory depends on making your ally understand faster and more accurately than t
    - No coordinates
    - No direct geometry
    - No explicit “fire at X” commands
-   The player isn't outright *forbidden* from offering such instructions, but they would be extremely foolish to do so, because that would enable the enemy to simply reposition whatever token was at that location.
+   The player isn't outright *forbidden* from offering such instructions, but they would be extremely foolish to do so, because doing so gives the enemy perfect insight into their intent and enables believable counter-messages.
 
 3. **Adversarial Injection**  
    The enemy may also issue instructions on the same channel.  
    The ally does not know which messages are genuine.
 
 4. **Enemy Counterplay**  
-   After hearing the instruction, the enemy may reposition a single asset:
-   - Move a ship to avoid a suspected strike
-   - Move a hostage to a suspected strike to force friendly fire
+   The enemy cannot move ships or hostages after placement. Their counterplay is limited to deduction and disruptive or deceptive messages over the same channel.
 
 5. **Ally Decision**  
    The ally may:

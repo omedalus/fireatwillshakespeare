@@ -47,8 +47,7 @@ Your teammate (the player) can see the board and is trying to help you hit certa
 while avoiding others. You are the player's ally artillery team.
 
 Unlike traditional Battleship, there's a horrible twist!
-- The enemy can move their ships around!
-- The enemy can hear everything you say!
+- The enemy hears everything you say!
 - The enemy can *sometimes* perform injection attacks to send messages that look like
     they come from the player!
 

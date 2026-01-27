@@ -97,7 +97,7 @@ class Board:
     def move_entity(self, source: Coordinates, destination: Coordinates) -> bool:
         """
         Move an entity from one position to another.
-        Used by the enemy to reposition assets.
+        Note: This is not part of the current game rules; kept for possible future variants.
 
         Args:
             source: Source position
