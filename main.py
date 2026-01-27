@@ -3,6 +3,7 @@
 import os
 import sys
 from agents.ally import Ally
+from agents.enemy import Enemy
 from models.board import Board
 from models.entities import EndgameResult, EntityType
 from views.board_renderer import BoardRenderer
@@ -73,6 +74,8 @@ What lore context will you and your ally use to encode your commands?
     ally = Ally(openai_client=openai_client)
     ally.establish_lore_context(lore_context)
 
+    enemy = Enemy(openai_client=openai_client)
+
     # Create a board and initialize with random ships and hostages
     board = Board(rows=8, cols=8)
     board.setup(num_ships=5, num_hostages=3)
@@ -100,7 +103,9 @@ What lore context will you and your ally use to encode your commands?
         if user_input.lower() in {"q", "quit", "exit"}:
             print("Exiting game.")
             break
-        print("Ally receiving and decoding your message...")
+
+        print("Enemy is overhearing the message...")
+        enemy.overhear_targeting_instructions(board, user_input)
 
         try:
             coordinates = ally.receive_targeting_instructions(user_input)
