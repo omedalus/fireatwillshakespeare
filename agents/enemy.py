@@ -327,6 +327,11 @@ listening in, so he's deliberately trying to make it hard for us to understand t
 He might be messing with us. He might be transmitting false information. He might be
 trying to trick us into misinterpreting the message.
 
+Also keep in mind that *the ally cannot see the board*. They're getting all their information
+from these messages alone. They can't see where the ships or hostages are, so they cannot use
+the positions of the ships or hostages to help them decode the message. They have to rely
+entirely on the message itself, and their knowledge of the lore context.
+
 First, discuss your reasoning. If you need to do any "scratchpad"
 calculations, do so. If you need to "think aloud" to arrive at the coordinates, do so.
 I'd like to hear your thoughts as you go.
