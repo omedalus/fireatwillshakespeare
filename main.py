@@ -97,6 +97,7 @@ What lore context will you and your ally use to encode your commands?
         # Every other turn is an injection attack turn
         is_injection_turn = not is_injection_turn
 
+        board.start_turn()
         ally.start_turn(board)
         enemy.start_turn(board)
 

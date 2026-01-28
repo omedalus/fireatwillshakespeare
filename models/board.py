@@ -75,6 +75,10 @@ class Board:
         self.grid[coordinates.row][coordinates.col] = entity_type
         return True
 
+    def start_turn(self) -> None:
+        """Prepare the board for a new turn (e.g., clear chaff)."""
+        self.clear_chaff()
+
     def fire(self, coordinates: Coordinates) -> Optional[EntityType]:
         """
         Fire at a position.
