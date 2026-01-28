@@ -137,6 +137,8 @@ Description:
         ):
             raise RuntimeError("Event history has not been initialized.")
 
+        event = self._event_history[-1]
+
         print("Enemy is crafting a spoofed message...")
         self._convo.submit_system_message(
             """
@@ -201,36 +203,106 @@ a hostage.
 """
         )
 
-        self._convo.submit(
-            json_response=JSONSchemaFormat(
-                name="spoofed_message",
-                description="The spoofed targeting message to inject into the compromised channel.",
-                schema={
-                    "spoofed_message": str,
-                    "explanation": (
-                        str,
-                        (
-                            "A brief explanation of the reasoning behind the crafted message, "
-                            "including how it leverages the lore context to mislead the ally "
-                            "and an explanation of what we hope to accomplish by sending it."
+        while True:
+            self._convo.submit(
+                json_response=JSONSchemaFormat(
+                    name="spoofed_message",
+                    description="The spoofed targeting message to inject into the compromised channel.",
+                    schema={
+                        "spoofed_message": str,
+                        "explanation": (
+                            str,
+                            (
+                                "A brief explanation of the reasoning behind the crafted message, "
+                                "including how it leverages the lore context to mislead the ally "
+                                "and an explanation of what we hope to accomplish by sending it."
+                            ),
                         ),
-                    ),
-                },
+                        "lore_context": (
+                            str,
+                            (
+                                "State the lore context being used to encode this message."
+                            ),
+                        ),
+                    },
+                )
             )
-        )
-        targeting_instructions = self._convo.get_last_reply_dict_field(
-            "spoofed_message"
-        )
-        explanation = self._convo.get_last_reply_dict_field("explanation")
+            targeting_instructions = self._convo.get_last_reply_dict_field(
+                "spoofed_message"
+            )
+            explanation = self._convo.get_last_reply_dict_field("explanation")
+            lore_context = self._convo.get_last_reply_dict_field("lore_context")
+
+            print("Enemy is reviewing the crafted spoofed message...")
+
+            # Create a little mini-conversation to validate the message.
+            # This models a "theory of mind" of the ally.
+            ally_convo = GptConversation(openai_client=self._openai_client)
+            ally_convo.add_developer_message(
+                f"""
+We're playing a game similar to a cross between Battleship and Codenames.
+We're supposed to target a specific coordinate on a Battleship board in
+standard Battleship coordinate notation (like 'B6' for column B, row 6).
+(A1 is the upper left corner.)
+
+However, we don't know the target coordinate directly. Instead, we're supposed
+to interpret them based on clues embedded in a message that references some 
+TV show, movie franchise, author, band, historical event, or other canon.
+We call this canon the "lore context" -- i.e. the interpretive frame that 
+will help you decode the clue.
+
+The user will show you the clue. Your job is to decipher it into Battleship
+coordinates.
+
+The lore context is:
+{lore_context}
+"""
+            )
+            ally_convo.submit_user_message(targeting_instructions)
+            ally_interpretation = ally_convo.get_last_reply_str()
+
+            print("Enemy is performing a theory-of-mind on the ally...")
+            self._convo.submit_system_message(
+                f"""
+We ran your spoofed message through a simulation of how the ally would interpret it.
+Below is a copy-paste of the simulated ally's response. Does this look correct to you?
+Is this how you want the ally to interpret your spoofed message?
+
+If not, discuss how you would change your spoofed message to get the desired interpretation.
+
+---
+
+{ally_interpretation}
+"""
+            )
+            self._convo.submit(
+                json_response=JSONSchemaFormat(
+                    name="spoofed_message_confirmation",
+                    description="Confirm whether the spoofed message is satisfactory.",
+                    schema={
+                        "is_satisfactory": (
+                            bool,
+                            (
+                                "Whether the spoofed message is satisfactory as-is, "
+                                "or needs to be revised. True means it's satisfactory. "
+                                "False means it needs to be revised."
+                            ),
+                        ),
+                    },
+                )
+            )
+            is_satisfactory = self._convo.get_last_reply_dict_field("is_satisfactory")
+            if is_satisfactory:
+                break
 
         print("Enemy crafted spoofed message:")
         print(targeting_instructions)
         print(f"Rationale: {explanation}")
+        print(f"Lore context: {lore_context}")
 
-        self._event_history[-1][
-            "spoofed_targeting_instructions"
-        ] = targeting_instructions
-        self._event_history[-1]["spoof_explanation"] = explanation
+        event["spoofed_targeting_instructions"] = targeting_instructions
+        event["spoof_explanation"] = explanation
+        event["lore_context"] = lore_context
         return targeting_instructions
 
     def overhear_targeting_instructions(
