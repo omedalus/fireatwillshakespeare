@@ -531,6 +531,23 @@ to the messages they've received.
 """
         )
 
+        print("Enemy is reviewing past opponent actions against lore context guess...")
+        self._convo.submit_system_message(
+            f"""
+Go through the entire history of messages and artillery team actions so far.
+For each turn, evaluate whether the artillery team's action aligns with what we expect
+based on our current lore context hypothesis.
+
+Take particular note of any discrepancies or inconsistencies. If there are turns
+where the artillery team's action doesn't make sense given our lore context hypothesis,
+there could be the following explanations:
+- The artillery team misinterpreted the message.
+- The lore context could plausibly provide multiple valid interpretations of the message,
+    leading to different actions.
+- Our lore context hypothesis is incorrect or incomplete.
+"""
+        )
+
         print("Enemy is leaving notes for future turns...")
         self._convo.submit_system_message(
             f"""
