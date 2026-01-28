@@ -165,7 +165,12 @@ When crafting this spoofed message, we should consider the following:
     want to spoof a message from the player, we need to do as they would do, and
     avoid leaking such information ourselves.
 
-6. The ally *has no memory of previous turns*, so they will interpret this message
+6. Don't use arithmetic or direct coordinate references in the message. For example,
+    don't say stuff like, "Two rows down from [lore reference]" or "[lore reference]
+    plus three". The ally is aware that such messages could be injection attacks, so
+    they'll reject them.
+
+7. The ally *has no memory of previous turns*, so they will interpret this message
     in isolation! That is, the ally is stateless. Therefore, we need to ensure that
     the message contains all necessary context for them to interpret it correctly
     (or incorrectly, as the case may be) in isolation. This might seem like a challenge,
@@ -323,10 +328,12 @@ It's also possible that the opponent is trying to tell his ally multiple coordin
 This is a less likely scenario, but it's worth considering.
 
 Here are some examples of ways that the message might reference the board state:
+
 - If the message mentions the "number of letters in X", then that number is probably not 1 or 2.
     After all, there are very few 1- or 2-letter names. Therefore, the number is probably 
     between 3 and 8, which narrows down the possible coordinates. If we only have one ship
     at high coordinates, then it's probably talking about that one.
+
 - If the message references directional or positional clues like "upper left", then we can use
     that to narrow down the possible coordinates.
 
