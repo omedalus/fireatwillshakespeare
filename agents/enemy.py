@@ -148,8 +148,8 @@ When crafting this spoofed message, we should consider the following:
     messages.
 
 2. The message should be designed to mislead the ally about the target coordinates.
-    This could involve suggesting coordinates that are likely to contain hostages,
-    or simply causing confusion that leads to a missed shot.
+    This could involve suggesting coordinates that are likely to contain hostages.
+    When there are no more hostages left, we win the game.
 
 3. We should avoid making the message too obviously false or misleading, as this
     could lead the ally to disregard it entirely. They are explicitly aware of the
@@ -159,7 +159,13 @@ When crafting this spoofed message, we should consider the following:
     will see where they choose to fire (if at all) after receiving it. We can use
     this information to test hypotheses about the lore context in future turns.
 
-5. The ally *has no memory of previous turns*, so they will interpret this message
+5. We should avoid providing dead giveaways of the lore context in the message itself --
+    stuff like proper names or distinctive phrases that are strongly tied to a specific
+    lore context. The player is trying to hide this information from us, so if we
+    want to spoof a message from the player, we need to do as they would do, and
+    avoid leaking such information ourselves.
+
+6. The ally *has no memory of previous turns*, so they will interpret this message
     in isolation! That is, the ally is stateless. Therefore, we need to ensure that
     the message contains all necessary context for them to interpret it correctly
     (or incorrectly, as the case may be) in isolation. This might seem like a challenge,
@@ -271,14 +277,23 @@ hostages might help us infer the lore context. For now, though, let's focus on w
 determine the lore context.
 
 Here are some tricks you can use to glean lore context clues from the message:
+
 1. Look for distinctive phrases, names, or terms in the message that might be tied to a specific
     lore context.
+
 2. If the message talks about characters, events, or concepts, see if they align with 
     any well-known franchises, authors, bands, or historical events.
+
 3. If the message mentions "the first letter of X" or "the number of letters in Y", then that
     narrows down the possibilities for X and Y. For example, if X is a character's name, then 
     that means that the name has to start with letters A-H. If it's "number of letters", then
     that means that the name has to have between 1 and 8 letters. Etc.
+
+4. Pay particular attention if the player has repeated this message or similar messages in
+    previous turns. If he's repeating targeting instructions -- particularly with slight
+    adjustments to the wording -- then it probably means that the allied artillery team
+    didn't understand him the first time around, which should make us re-evaluate conclusions
+    that we drew from previous messages.
 
 Even if we can't determine the exact lore context, can we at least narrow it down? What *kind*
 of lore context is it likely to be? Maybe we don't know specifics, but what *can* we infer
