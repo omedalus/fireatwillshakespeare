@@ -550,6 +550,13 @@ Ask yourself: What lore context would lead the artillery team to take that actio
 -- i.e. fire at that position (assuming they fired)? Does that align with our current
 understanding of the lore context?
 
+Remember, when we talk about "lore context", we're not talking simply about an encryption
+protocol or a method of structuring messages. We're talking about a shared narrative
+frame -- a movie franchise, an author, a band, a historical event, a field of science,
+etc. -- that the opponent and his ally are using to encode and decode their messages.
+They are using shared references to characters, events, concepts, and terminology from 
+this secret canon to obfuscate their targeting instructions.
+
 What's your leading hypothesis about the lore context at this point?
 Have we nailed it down, or are we still uncertain? Does our current
 understanding of the lore context align with the artillery team's action
