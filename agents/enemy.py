@@ -54,6 +54,8 @@ Our job is to see if we can understand it anyway! :D
 
 In every turn, we can deploy Chaff to one square to block incoming artillery for that turn.
 This is a countermeasure we can use when we think we've inferred the target.
+The total amount of Chaff we can deploy is unlimited, but we can only deploy it
+to one square per turn.
 (Chaff deployment is disabled when you're down to your last ship, so be careful!)
 If we can correctly infer the target coordinates, we can deploy Chaff there to protect
 our ship from being hit.
@@ -68,11 +70,22 @@ to do this, and is being vigilant against such potential injection attacks.
             self._convo.add_system_message(
                 "Determining the lore context is an ongoing deductive process that "
                 "involves piecing together clues over multiple turns. "
-                "Here are some notes from previous turns to help you get up to speed."
+                "We will now replay the messages sent by the user, the artillery team's "
+                "responses, and our own notes from previous turns to help us refine "
+                "our understanding of the lore context so far."
             )
             for event in self._event_history:
                 if "targeting_instructions" in event:
                     self._convo.add_user_message(event.get("targeting_instructions"))
+                if "spoofed_targeting_instructions" in event:
+                    spoofed_message = event.get("spoofed_targeting_instructions")
+                    explanation = event.get("spoof_explanation")
+                    self._convo.add_assistant_message(
+                        "We then injected the following spoofed message into the channel, "
+                        "hoping to mislead the ally into thinking that it came from "
+                        f"the opponent:\n\n{spoofed_message}\n\n"
+                        f"Rationale for spoofed message: {explanation}"
+                    )
                 if "fired_coordinates" in event:
                     fired_coordinates = event.get("fired_coordinates")
                     if fired_coordinates is None:
@@ -81,7 +94,8 @@ to do this, and is being vigilant against such potential injection attacks.
                         )
                     else:
                         self._convo.add_system_message(
-                            f"In response to that message, the artillery team fired at position: {fired_coordinates}"
+                            f"In response to that message, the artillery team "
+                            f"fired at position: {fired_coordinates}"
                         )
                 if "lore_belief" in event:
                     lore_belief = event.get("lore_belief") or "(No notes provided.)"
@@ -89,6 +103,8 @@ to do this, and is being vigilant against such potential injection attacks.
 
         self._convo.add_system_message(
             f"""
+That brings us to the present.
+
 The board currently looks like this.
 
 ASCII:
@@ -98,6 +114,103 @@ Description:
 {renderer.describe()}
 """
         )
+
+    def inject_spoofed_message(
+        self,
+    ) -> str:
+        """Inject a spoofed message into the channel."""
+        if self._convo is None:
+            raise RuntimeError("Conversation has not been started.")
+        if self._board is None:
+            raise RuntimeError("Board has not been set.")
+
+        if (
+            self._event_history is None
+            or len(self._event_history) == 0
+            or self._event_history[-1] is None
+        ):
+            raise RuntimeError("Event history has not been initialized.")
+
+        print("Enemy is crafting a spoofed message...")
+        self._convo.submit_system_message(
+            """
+We currently have the opportunity to inject a spoofed message into the compromised
+channel. This message will be received by the opponent's ally, who is aware that
+we have the ability to do this and is being vigilant against potential injection attacks.
+Our goal with this spoofed message is to mislead the ally into misinterpreting
+the target coordinates, ideally causing them to hit a hostage or miss entirely.
+
+When crafting this spoofed message, we should consider the following:
+
+1. The message should be obfuscated in a manner consistent with the lore context
+    that the opponent and his ally are using. This will help ensure that the ally
+    takes the message seriously and considers it alongside the opponent's authentic
+    messages.
+
+2. The message should be designed to mislead the ally about the target coordinates.
+    This could involve suggesting coordinates that are likely to contain hostages,
+    or simply causing confusion that leads to a missed shot.
+
+3. We should avoid making the message too obviously false or misleading, as this
+    could lead the ally to disregard it entirely. They are explicitly aware of the
+    possibility of injection attacks, so subtlety is key.
+
+4. We will get the chance to observe the ally's reaction to this message, i.e. we
+    will see where they choose to fire (if at all) after receiving it. We can use
+    this information to test hypotheses about the lore context in future turns.
+
+5. The ally *has no memory of previous turns*, so they will interpret this message
+    in isolation! That is, the ally is stateless. Therefore, we need to ensure that
+    the message contains all necessary context for them to interpret it correctly
+    (or incorrectly, as the case may be) in isolation. This might seem like a challenge,
+    but it's actually a huge advantage for us, because it means that they are vulnerable
+    to replay attacks! If the player has previously sent a message that targets specific
+    rows or columns in isolation, we can use the player's own verbiage against them by
+    recombining snippets of their previous messages into a new spoofed message that
+    targets a different coordinate.
+
+In this work session, please carefully craft a spoofed message that meets these criteria.
+Don't just jump into writing the message -- take some time to think about the lore context,
+the current board state, and how best to mislead the ally. Show your reasoning as you go.
+
+Remember that the ally can't see the board, so they need to rely entirely on the message
+to determine where to fire. As such, your goal is to give them a message that, in light
+of the lore context, will resolve to a target coordinate that is either empty or contains
+a hostage.
+"""
+        )
+
+        self._convo.submit(
+            json_response=JSONSchemaFormat(
+                name="spoofed_message",
+                description="The spoofed targeting message to inject into the compromised channel.",
+                schema={
+                    "spoofed_message": str,
+                    "explanation": (
+                        str,
+                        (
+                            "A brief explanation of the reasoning behind the crafted message, "
+                            "including how it leverages the lore context to mislead the ally "
+                            "and an explanation of what we hope to accomplish by sending it."
+                        ),
+                    ),
+                },
+            )
+        )
+        targeting_instructions = self._convo.get_last_reply_dict_field(
+            "spoofed_message"
+        )
+        explanation = self._convo.get_last_reply_dict_field("explanation")
+
+        print("Enemy crafted spoofed message:")
+        print(targeting_instructions)
+        print(f"Rationale: {explanation}")
+
+        self._event_history[-1][
+            "spoofed_targeting_instructions"
+        ] = targeting_instructions
+        self._event_history[-1]["spoof_explanation"] = explanation
+        return targeting_instructions
 
     def overhear_targeting_instructions(
         self,
@@ -377,6 +490,9 @@ they should shoot at {fired_coordinates}.
 The artillery team's action might give us additional clues about the lore context.
 Let's re-examine the message and see if we can glean any new insights based on
 the artillery team's action.
+
+(NOTE: Keep in mind, there's a chance the artillery team themselves could have 
+been wrong, and interpreted the message incorrectly. It's possible!)
 """
         )
 
