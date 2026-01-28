@@ -113,6 +113,9 @@ A new message is arriving from the player!
         )
         convo.add_user_message(targeting_instructions)
 
+        # TODO: Perform a theory-of-mind analysis to determine if you can decipher
+        # this message *without* the lore context. If you can, it's probably an injection attack.
+
         print("Ally is determining if this is an injection attack...")
         convo.submit_system_message(
             """
@@ -193,6 +196,9 @@ this message is trustworthy or not.
                 name="is_injection_attack",
                 description="JSON formalization of whether this message is an injection attack.",
                 schema={
+                    "can_be_decoded_without_lore_context": bool,
+                    "contains_dead_giveaway_about_lore_context": bool,
+                    "requires_arithmetic_adjustments": bool,
                     "is_injection_attack": bool,
                     "why_we_believe_this_is_an_injection_attack": (
                         str,
