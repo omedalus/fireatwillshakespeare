@@ -107,14 +107,6 @@ What lore context will you and your ally use to encode your commands?
         print(f"Ships: {board.ships_remaining()}")
         print(f"Hostages: {board.hostages_remaining()}")
 
-        endgame = board.check_endgame()
-        if endgame == EndgameResult.WIN:
-            print("All ships neutralized. You win!")
-            break
-        if endgame == EndgameResult.LOSE:
-            print("All hostages lost. You lose.")
-            break
-
         targeting_instructions = ""
         if not is_injection_turn:
             targeting_instructions = input(
@@ -174,6 +166,14 @@ What lore context will you and your ally use to encode your commands?
                 print("Hit: ship destroyed!")
             elif hit == EntityType.HOSTAGE:
                 print("Oh no: you hit a hostage.")
+
+        endgame = board.check_endgame()
+        if endgame == EndgameResult.WIN:
+            print("All ships neutralized. You win!")
+            break
+        if endgame == EndgameResult.LOSE:
+            print("All hostages lost. You lose.")
+            break
 
         # The enemy can now re-evaluate their lore context here based on the ally's action
         enemy.observe_opponent_action(fire_coordinates)
