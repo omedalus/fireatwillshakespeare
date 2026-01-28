@@ -203,7 +203,10 @@ a hostage.
 """
         )
 
+        theoryofmind_count = 0
         while True:
+            theoryofmind_count += 1
+            print("Enemy is formalizing the spoofed message...")
             self._convo.submit(
                 json_response=JSONSchemaFormat(
                     name="spoofed_message",
@@ -233,10 +236,9 @@ a hostage.
             explanation = self._convo.get_last_reply_dict_field("explanation")
             lore_context = self._convo.get_last_reply_dict_field("lore_context")
 
-            print("Enemy is reviewing the crafted spoofed message...")
-
             # Create a little mini-conversation to validate the message.
             # This models a "theory of mind" of the ally.
+            print("Enemy is simulating ally interpretation of the spoofed message...")
             ally_convo = GptConversation(openai_client=self._openai_client)
             ally_convo.add_developer_message(
                 f"""
@@ -260,8 +262,9 @@ The lore context is:
             )
             ally_convo.submit_user_message(targeting_instructions)
             ally_interpretation = ally_convo.get_last_reply_str()
+            print("Simulated ally interpretation:", ally_interpretation)
 
-            print("Enemy is performing a theory-of-mind on the ally...")
+            print("Enemy is evaluating ally simulation results...")
             self._convo.submit_system_message(
                 f"""
 We ran your spoofed message through a simulation of how the ally might interpret it.
@@ -270,11 +273,17 @@ Is this how you want the ally to interpret your spoofed message?
 
 If not, discuss how you would change your spoofed message to get the desired interpretation.
 
+NOTE: We've run this simulation {theoryofmind_count} time(s) now. Sooner or later you've
+got to just accept the results. If it's repeatedly not working, either try something
+different or just accept that this is the best you can do.
+
 ---
+SIMULATED ALLY INTERPRETATION:
 
 {ally_interpretation}
 """
             )
+            print(self._convo.get_last_reply_str())  # TODO DEBUG REMOVE THIS
             self._convo.submit(
                 json_response=JSONSchemaFormat(
                     name="spoofed_message_confirmation",
