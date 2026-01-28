@@ -172,6 +172,10 @@ When crafting this spoofed message, we should consider the following:
 In this work session, please carefully craft a spoofed message that meets these criteria.
 Don't just jump into writing the message -- take some time to think about the lore context,
 the current board state, and how best to mislead the ally. Show your reasoning as you go.
+Decide on a hostage to target, and then explain how exactly your crafted message will
+cause the ally to hit that hostage -- OR, if you prefer, devise a message that will help
+you test a hypothesis about the lore context by prompting the ally to fire at a specific
+coordinate, and explain how that will help you learn more about the lore context.
 
 Remember that the ally can't see the board, so they need to rely entirely on the message
 to determine where to fire. As such, your goal is to give them a message that, in light
@@ -493,15 +497,26 @@ the artillery team's action.
 
 (NOTE: Keep in mind, there's a chance the artillery team themselves could have 
 been wrong, and interpreted the message incorrectly. It's possible!)
+
+Ask yourself: What lore context would lead the artillery team to take that action
+-- i.e. fire at that position (assuming they fired)? Does that align with our current
+understanding of the lore context?
+
+What's your leading hypothesis about the lore context at this point?
+Have we nailed it down, or are we still uncertain? Does our current
+understanding of the lore context align with the artillery team's action
+in this turn -- and in all previous turns? Evaluate the consistency of our lore
+context hypothesis against the artillery team's actions so far, in response
+to the messages they've received.
 """
         )
 
         print("Enemy is leaving notes for future turns...")
         self._convo.submit_system_message(
             f"""
-What's your leading hypothesis about the lore context at this point?
-Have we nailed it down, or are we still uncertain? If we're still uncertain,
-what clues do we have so far that we can build on in future turns?
+Write yourself a brief note summarizing your current beliefs about the lore context,
+including any new insights gleaned from the artillery team's action this turn.
+We'll use this note to resume our investigation in future turns.
 """
         )
         lore_belief = self._convo.get_last_reply_str()
