@@ -86,6 +86,12 @@ to do this, and is being vigilant against such potential injection attacks.
                         f"the opponent:\n\n{spoofed_message}\n\n"
                         f"Rationale for spoofed message: {spoof_explanation}"
                     )
+                if "targeting_expectation" in event:
+                    targeting_expectation = event.get("targeting_expectation")
+                    self._convo.add_system_message(
+                        f"Our expectation of where the artillery would fire: "
+                        f"{targeting_expectation}"
+                    )
                 if "fired_coordinates" in event:
                     fired_coordinates = event.get("fired_coordinates")
                     if fired_coordinates is None:
@@ -247,7 +253,8 @@ a hostage.
         ):
             raise RuntimeError("Event history has not been initialized.")
 
-        self._event_history[-1]["targeting_instructions"] = targeting_instructions
+        event = self._event_history[-1]
+        event["targeting_instructions"] = targeting_instructions
 
         self._convo.add_system_message(
             """
@@ -306,10 +313,6 @@ about it?
 """
         )
 
-        if not self._board.can_deploy_chaff():
-            print("Chaff deployment is disabled (only one ship remains).")
-            return None
-
         print("Enemy is trying to determine the target coordinates...")
         self._convo.submit_system_message(
             """
@@ -360,6 +363,67 @@ I'd like to hear your thoughts as you go.
 """
         )
 
+        self._convo.submit(
+            json_response=JSONSchemaFormat(
+                name="target_expectation",
+                description="JSON formalization of where we think the artillery will fire.",
+                schema={
+                    "col": (
+                        str,
+                        (
+                            "The letter of the column (A-H) of the desired chaff square. "
+                            "If you don't expect them to fire anywhere, return an empty string."
+                        ),
+                        ["", "A", "B", "C", "D", "E", "F", "G", "H"],
+                    ),
+                    "row": (
+                        int,
+                        (
+                            "The number of the row (1-8) of the desired chaff square."
+                            "If you don't expect them to fire anywhere, return 0."
+                        ),
+                        (0, 8),
+                    ),
+                    "lore_leak": (
+                        str,
+                        (
+                            "What does this message reveal about the lore context, if anything? "
+                            "Has this message caused us to update our beliefs about the lore context? "
+                        ),
+                    ),
+                    "targeting_explanation": (
+                        str,
+                        (
+                            "A brief explanation of the reasoning behind our decision of "
+                            "why we believe the ally will fire at the given coordinates. "
+                            "(Or why we believe they won't fire at all, if that's the case.)"
+                        ),
+                    ),
+                },
+            )
+        )
+        col = self._convo.get_last_reply_dict_field("col")
+        row = self._convo.get_last_reply_dict_field("row")
+        lore_leak = self._convo.get_last_reply_dict_field("lore_leak")
+        targeting_explanation = self._convo.get_last_reply_dict_field(
+            "targeting_explanation"
+        )
+        if not col or not row:
+            raise ValueError("Could not decode target coordinates from message.")
+
+        coordinates = Coordinates.from_string(f"{col}{row}")
+        print(f"Enemy beliefs about lore: {lore_leak}")
+        print(
+            f"Enemy believes that the artillery will fire on: {coordinates}. {targeting_explanation}"
+        )
+        event["targeting_expectation"] = targeting_explanation
+        event["targeting_explanation"] = targeting_explanation
+        event["lore_belief"] = lore_leak
+
+        if not self._board.can_deploy_chaff():
+            print("Chaff deployment is disabled (only one ship remains).")
+            return None
+
         print("Enemy is deciding where to deploy chaff...")
         self._convo.submit_system_message(
             """
@@ -404,52 +468,16 @@ With all of that in mind, discuss which square we should deploy Chaff to, and wh
                         "The number of the row (1-8) of the desired chaff square.",
                         (1, 8),
                     ),
-                    "lore_deduction": (
-                        str,
-                        (
-                            "A brief summary of what we've inferred about the lore context "
-                            "so far. If we've nailed the lore context, state it explicitly. "
-                            "If we aren't sure yet, then write some notes about the clues "
-                            "we've got so far, so that we can resume investigating later."
-                        ),
-                    ),
-                    "targeting_explanation": (
-                        str,
-                        (
-                            "A brief explanation of the reasoning behind our decision of "
-                            "where to deploy chaff. Include any relevant inferences about "
-                            "the target coordinates that informed our decision."
-                        ),
-                    ),
                 },
             )
         )
         col = self._convo.get_last_reply_dict_field("col")
         row = self._convo.get_last_reply_dict_field("row")
-        lore_deduction = self._convo.get_last_reply_dict_field("lore_deduction")
-        targeting_explanation = self._convo.get_last_reply_dict_field(
-            "targeting_explanation"
-        )
         if not col or not row:
-            raise ValueError("Could not decode target coordinates from message.")
+            raise ValueError("Could not decode chaff coordinates from message.")
 
         coordinates = Coordinates.from_string(f"{col}{row}")
         print(f"Enemy is deploying chaff to: {coordinates}")
-        print(f"  Lore Deduction: {lore_deduction}")
-        print(f"  Targeting Explanation: {targeting_explanation}")
-
-        self._event_history[-1]["lore_belief"] = lore_deduction
-
-        self._convo.submit_system_message(
-            f"""
-We have deployed chaff to {coordinates}.
-Rationale: {targeting_explanation}
-
-To recap, here's what we know about the lore context so far:
-{lore_deduction}
-"""
-        )
-
         return coordinates
 
     def observe_opponent_action(
@@ -470,6 +498,8 @@ To recap, here's what we know about the lore context so far:
 
         event = self._event_history[-1]
         event["fired_coordinates"] = fired_coordinates
+
+        expected_coordinates = event.get("targeting_expectation")
 
         self._convo.add_system_message(
             """
@@ -565,6 +595,18 @@ context hypothesis against the artillery team's actions so far, in response
 to the messages they've received.
 """
         )
+
+        if (
+            fired_coordinates is not None
+            and expected_coordinates is not None
+            and (f"{fired_coordinates}" != f"{expected_coordinates}")
+        ):
+            self._convo.submit_system_message(
+                f"""
+The artillery team fired at {fired_coordinates}, but we expected them to fire at
+{expected_coordinates} based on our decoding of the message.
+"""
+            )
 
         print("Enemy is reviewing past opponent actions against lore context guess...")
         self._convo.submit_system_message(
