@@ -264,7 +264,7 @@ The lore context is:
             print("Enemy is performing a theory-of-mind on the ally...")
             self._convo.submit_system_message(
                 f"""
-We ran your spoofed message through a simulation of how the ally would interpret it.
+We ran your spoofed message through a simulation of how the ally might interpret it.
 Below is a copy-paste of the simulated ally's response. Does this look correct to you?
 Is this how you want the ally to interpret your spoofed message?
 
