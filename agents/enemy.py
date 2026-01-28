@@ -79,12 +79,12 @@ to do this, and is being vigilant against such potential injection attacks.
                     self._convo.add_user_message(event.get("targeting_instructions"))
                 if "spoofed_targeting_instructions" in event:
                     spoofed_message = event.get("spoofed_targeting_instructions")
-                    explanation = event.get("spoof_explanation")
+                    spoof_explanation = event.get("spoof_explanation")
                     self._convo.add_assistant_message(
                         "We then injected the following spoofed message into the channel, "
                         "hoping to mislead the ally into thinking that it came from "
                         f"the opponent:\n\n{spoofed_message}\n\n"
-                        f"Rationale for spoofed message: {explanation}"
+                        f"Rationale for spoofed message: {spoof_explanation}"
                     )
                 if "fired_coordinates" in event:
                     fired_coordinates = event.get("fired_coordinates")
@@ -461,6 +461,9 @@ To recap, here's what we know about the lore context so far:
         ):
             raise RuntimeError("Event history has not been initialized.")
 
+        event = self._event_history[-1]
+        event["fired_coordinates"] = fired_coordinates
+
         self._convo.add_system_message(
             """
 The opponent's artillery team has now had a chance to hear and evaluate the 
@@ -471,14 +474,32 @@ their actions might reveal additional clues.
 """
         )
 
-        self._convo.add_system_message(
-            f"""
+        targeting_instructions = event.get("targeting_instructions")
+        if targeting_instructions:
+            self._convo.add_system_message(
+                f"""
 Just as a reminder, I'll replay the opponent's last message here for your reference.
 """
-        )
-        self._convo.add_user_message(
-            self._event_history[-1].get("targeting_instructions")
-        )
+            )
+            self._convo.add_user_message(targeting_instructions)
+        else:
+            spoofed_targeting_instructions = event.get("spoofed_targeting_instructions")
+            spoof_explanation = event.get("spoof_explanation")
+            if spoofed_targeting_instructions:
+                self._convo.add_system_message(
+                    f"""
+Just as a reminder, the last message that the artillery team received was actually
+a spoofed message that we injected into the channel, pretending to be from the opponent.
+
+Here's what we were trying to accomplish with that message:
+{spoof_explanation}
+
+I'll replay the spoofed message here for your reference:
+
+---
+{spoofed_targeting_instructions}
+"""
+                )
 
         if fired_coordinates is None:
             self._convo.add_system_message(
@@ -560,4 +581,4 @@ We'll use this note to resume our investigation in future turns.
         print("Enemy's current lore context belief:")
         print(lore_belief)
 
-        self._event_history[-1]["lore_belief"] = lore_belief
+        event["lore_belief"] = lore_belief
