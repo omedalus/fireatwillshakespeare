@@ -245,7 +245,10 @@ a hostage.
 We're playing a game similar to a cross between Battleship and Codenames.
 We're supposed to target a specific coordinate on a Battleship board in
 standard Battleship coordinate notation (like 'B6' for column B, row 6).
-(A1 is the upper left corner.)
+
+The board is ${self._board.rows} rows by ${self._board.cols} columns.
+Rows are designated by numbers from top to bottom, while columns are designated
+by letters from left to right. A1 is the upper left corner.
 
 However, we don't know the target coordinate directly. Instead, we're supposed
 to interpret them based on clues embedded in a message that references some 
