@@ -123,18 +123,20 @@ Can you determine the lore context just by reading this message?
         # Temporarily reveal the lore context to the ally for analysis.
         convo.add_developer_message(
             f"Well hey, guess what! The lore context is:\n{self.lore_context}\n\n"
-            "Did you guess it correctly?"
+            "Did you identify it correctly?"
         )
         convo.submit(
             json_response=JSONSchemaFormat(
                 name="lore_context_leakage",
-                description="JSON formalization of whether or not we guessed the lore context.",
+                description=(
+                    "JSON formalization of whether we precisely identified the lore context."
+                ),
                 schema={
                     "did_we_guess_the_lore_context_correctly": (
                         bool,
                         (
-                            "Whether or not we were able to guess the lore context "
-                            "just by reading the message. True means we guessed it correctly, "
+                            "Whether or not we were able to exactly determine the lore context "
+                            "just by reading the message. True means we nailed it, "
                             "False means we did not."
                         ),
                     ),
