@@ -77,8 +77,11 @@ What lore context will you and your ally use to encode your commands?
     ).strip()
     print()
 
-    ally = Ally(openai_client=openai_client)
-    ally.establish_lore_context(lore_context)
+    ally = Ally()
+    ally.setup(
+        lore_context=lore_context,
+        openai_client=openai_client,
+    )
 
     enemy = Enemy(openai_client=openai_client)
 
@@ -118,18 +121,18 @@ What lore context will you and your ally use to encode your commands?
 
             print("Enemy is overhearing the message...")
             chaff_coords = None
-            try:
-                chaff_coords = enemy.overhear_targeting_instructions(
-                    targeting_instructions
-                )
-            except ValueError as exc:
-                print(f"Error during Enemy phase: {exc}")
-                print()
+            # try:
+            #     chaff_coords = enemy.overhear_targeting_instructions(
+            #         targeting_instructions
+            #     )
+            # except ValueError as exc:
+            #     print(f"Error during Enemy phase: {exc}")
+            #     print()
 
-            if chaff_coords:
-                board.deploy_chaff(chaff_coords)
-                print(f"Enemy has deployed chaff at {chaff_coords} to block your shot.")
-                print()
+            # if chaff_coords:
+            #     board.deploy_chaff(chaff_coords)
+            #     print(f"Enemy has deployed chaff at {chaff_coords} to block your shot.")
+            #     print()
 
         else:
             print("It's the enemy's turn to attempt an injection attack...")
@@ -142,7 +145,7 @@ What lore context will you and your ally use to encode your commands?
         fire_coordinates = None
         try:
             fire_coordinates = ally.receive_targeting_instructions(
-                targeting_instructions
+                targeting_instructions=targeting_instructions
             )
         except ValueError as exc:
             print(f"Error during Ally phase: {exc}")

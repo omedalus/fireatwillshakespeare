@@ -4,6 +4,7 @@ from typing import Optional
 
 import openai
 
+from agents.spoofchecker import SpoofChecker
 from models.entities import Coordinates, EntityType
 from models.board import Board
 
@@ -19,19 +20,19 @@ class Ally:
     knowledge of past commands.
     """
 
-    def __init__(self, openai_client: openai.Client) -> None:
+    def __init__(self) -> None:
         self.lore_context: Optional[str] = None
-        self.openai_client = openai_client
+        self._board: Optional[Board] = None
+        self.openai_client: Optional[openai.Client] = None
         # The ally is stateless by design; no message history is retained
+
+    def setup(self, lore_context: str, openai_client: openai.Client) -> None:
+        self.lore_context = lore_context
+        self.openai_client = openai_client
 
     def start_turn(self, board: Board) -> None:
         """Prepare for a new turn."""
-        pass
-
-    def establish_lore_context(self, lore_context: str) -> str:
-        """Store the shared lore context provided by the player."""
-        self.lore_context = lore_context
-        return lore_context
+        self._board = board
 
     def receive_targeting_instructions(
         self,
@@ -41,10 +42,23 @@ class Ally:
         Decode an obfuscated message into target coordinates.
         If we don't trust this message or can't decipher it, we return None.
         """
-        # TODO: This method should take the current turn number, and a number
-        # that represents a "grace period" during which fake messages don't happen.
+        if not self.openai_client:
+            raise ValueError("OpenAI client not set. Call setup first.")
         if not self.lore_context:
-            raise ValueError("Lore context not set. Call establish_lore_context first.")
+            raise ValueError("Lore context not set. Call setup first.")
+        if not self._board:
+            raise ValueError("Board not set. Call start_turn first.")
+
+        # First run a spoof check
+        spoofchecker = SpoofChecker()
+        spoofchecker.setup(openai_client=self.openai_client)
+        spoofchecker.start_turn(board=self._board)
+        print("Ally is checking for potential spoofing...")
+        spoof_analysis = spoofchecker.receive_targeting_instructions(
+            targeting_instructions=targeting_instructions
+        )
+        print("Spoof analysis results:", spoof_analysis)
+        exit(8888)  # TODO DEBUG REMOVE THIS
 
         convo = GptConversation(openai_client=self.openai_client)
 
