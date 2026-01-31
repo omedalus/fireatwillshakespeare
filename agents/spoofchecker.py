@@ -319,10 +319,13 @@ How we made this determination: {explanation}
             relative_offsets_analysis = relative_offsets_future.result()
 
         full_analysis = f"""
+LORE LEAKAGE ANALYSIS:
 {lore_leakage_analysis}
 
+TARGET COORDINATES ANALYSIS:
 {target_coordinates_analysis}
 
+RELATIVE OFFSETS ANALYSIS:
 {relative_offsets_analysis}
 """
         return full_analysis

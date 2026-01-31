@@ -119,21 +119,6 @@ What lore context will you and your ally use to encode your commands?
                 print("Exiting game.")
                 break
 
-            print("Enemy is overhearing the message...")
-            chaff_coords = None
-            # try:
-            #     chaff_coords = enemy.overhear_targeting_instructions(
-            #         targeting_instructions
-            #     )
-            # except ValueError as exc:
-            #     print(f"Error during Enemy phase: {exc}")
-            #     print()
-
-            # if chaff_coords:
-            #     board.deploy_chaff(chaff_coords)
-            #     print(f"Enemy has deployed chaff at {chaff_coords} to block your shot.")
-            #     print()
-
         else:
             print("It's the enemy's turn to attempt an injection attack...")
             targeting_instructions = enemy.inject_spoofed_message()
@@ -143,10 +128,30 @@ What lore context will you and your ally use to encode your commands?
             print()
 
         fire_coordinates = None
+        chaff_coords = None
         try:
+            print("Ally is receiving your targeting instructions...")
             fire_coordinates = ally.receive_targeting_instructions(
                 targeting_instructions=targeting_instructions
             )
+
+            if not is_injection_turn:
+                print("Enemy is overhearing your targeting instructions...")
+                try:
+                    chaff_coords = enemy.overhear_targeting_instructions(
+                        targeting_instructions
+                    )
+                except ValueError as exc:
+                    print(f"Error during Enemy phase: {exc}")
+                    print()
+
+                if chaff_coords:
+                    board.deploy_chaff(chaff_coords)
+                    print(
+                        f"Enemy has deployed chaff at {chaff_coords} to block your shot."
+                    )
+                    print()
+
         except ValueError as exc:
             print(f"Error during Ally phase: {exc}")
             print()
