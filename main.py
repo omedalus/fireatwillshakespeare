@@ -83,7 +83,8 @@ What lore context will you and your ally use to encode your commands?
         openai_client=openai_client,
     )
 
-    enemy = Enemy(openai_client=openai_client)
+    enemy = Enemy()
+    enemy.setup(openai_client=openai_client)
 
     # Create a board and initialize with random ships and hostages
     board = Board(rows=8, cols=8)

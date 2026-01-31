@@ -70,3 +70,11 @@ class Entity:
 
     def __repr__(self):
         return f"{self.entity_type.value} at {self.position}"
+
+
+@dataclass
+class ObservedArtilleryAction:
+    """A recorded artillery action with its targeting instructions and fired coordinates."""
+
+    targeting_instructions: str
+    fired_coordinates: Coordinates

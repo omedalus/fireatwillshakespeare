@@ -10,18 +10,23 @@ from models.entities import Coordinates
 from utils.gpt import GptConversation, JSONSchemaFormat
 from views.board_renderer import BoardRenderer
 
-# TODO: THIS IS STILL MOSTLY JUST A COPY OF THE ALLY CLASS. NEED TO CUSTOMIZE IT FOR THE ENEMY.
-
 
 class Enemy:
     """The enemy that eavesdrops on player messages."""
 
-    def __init__(self, openai_client: openai.Client) -> None:
-        self._openai_client = openai_client
+    def __init__(self) -> None:
+        self._openai_client: Optional[openai.OpenAI] = None
         self._convo: Optional[GptConversation] = None
         self._board: Optional[Board] = None
 
         self._event_history = []
+
+    def setup(
+        self,
+        openai_client: openai.OpenAI,
+    ) -> None:
+        """Set up the enemy agent."""
+        self._openai_client = openai_client
 
     def start_turn(self, board: Board) -> None:
         """Prepare for a new turn."""

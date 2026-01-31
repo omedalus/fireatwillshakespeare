@@ -21,6 +21,7 @@ class SpoofChecker:
     def __init__(self) -> None:
         self._board: Optional[Board] = None
         self.openai_client: Optional[openai.Client] = None
+        self.lore_context: Optional[str] = None
         # The ally is stateless by design; no message history is retained
 
     def setup(self, openai_client: openai.Client) -> None:
@@ -29,6 +30,10 @@ class SpoofChecker:
     def start_turn(self, board: Board) -> None:
         """Prepare for a new turn."""
         self._board = board
+
+    def establish_lore_context(self, lore_context: str) -> None:
+        """Establish the lore context for this game."""
+        self.lore_context = lore_context
 
     def _start_convo(self, targeting_message: str) -> GptConversation:
         if self.openai_client is None:
@@ -303,9 +308,12 @@ How we made this determination: {explanation}
         """
         # Execute the three judgment functions in parallel
         with ThreadPoolExecutor(max_workers=3) as executor:
-            lore_leakage_future = executor.submit(
-                self._judge_lore_leakage, targeting_instructions
-            )
+            lore_leakage_future = None
+            if not self.lore_context:
+                lore_leakage_future = executor.submit(
+                    self._judge_lore_leakage, targeting_instructions
+                )
+
             target_coordinates_future = executor.submit(
                 self._judge_target_coordinates, targeting_instructions
             )
@@ -314,7 +322,14 @@ How we made this determination: {explanation}
             )
 
             # Wait for all tasks to complete and get results
-            lore_leakage_analysis = lore_leakage_future.result()
+            if lore_leakage_future:
+                lore_leakage_analysis = lore_leakage_future.result()
+            else:
+                lore_leakage_analysis = (
+                    f"Skipping lore leakage analysis. "
+                    f"We already know the lore context:\n{self.lore_context}"
+                )
+
             target_coordinates_analysis = target_coordinates_future.result()
             relative_offsets_analysis = relative_offsets_future.result()
 
